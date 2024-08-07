@@ -23,20 +23,7 @@ Una carta se puede voltear si no está encontrada y no está ya volteada, o no h
 */
 export const sePuedeVoltearLaCarta = (tablero: Tablero, indice: number): boolean => {
     // La carta específica que queremos voltear
-    const carta = tablero.cartas[indice];
-
-    //Verificamos si la carta ya está encontrada o volteada
-    if (carta.encontrada){
-        return false;
-    }
-
-    // Verificamos si ya hay dos cartas levantadas
-    if (tablero.estadoPartida === "DosCartasLevantadas") {
-        return false;
-    }
-
-    // Si ninguna de las condiciones anteriores se cumple, se puede voltear la carta
-    return true;
+    return !tablero.cartas[indice].encontrada && !tablero.cartas[indice].estaVuelta
 };
 
 export const voltearLaCarta = (tablero: Tablero, indice: number): void => {
