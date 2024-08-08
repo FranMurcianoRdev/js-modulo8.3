@@ -1,8 +1,6 @@
 import { Carta, Tablero, tablero } from "./modelo";
 import { sePuedeVoltearLaCarta, voltearLaCarta, sonPareja, parejaEncontrada, parejaNoEncontrada, esPartidaCompleta } from "./motor";
 
-let primeraCartaIndice: number | null = null;
-let segundaCartaIndice: number | null = null;
 
 // Función para que cada carta tenga un div con su imagen y el evento de voltear carta
 export const crearDivParaCadaCarta = (cartasBarajadasParaJugar: Carta[]): void => {
@@ -41,26 +39,21 @@ export const muestraIntentos = (tablero: Tablero): void => {
 
 // Función para manejar el click en una carta
 const manejarClickEnCarta = (divCarta: HTMLDivElement, tablero: Tablero, indice: number): void => {
-    if (!sePuedeVoltearLaCarta(tablero, indice)) {
-        if (tablero.cartas[indice].estaVuelta) {
-            alert("Esta carta ya está volteada.");
-        }
-        return;
-    }
 
     voltearCartaYMostrar(divCarta, tablero, indice);
 
     tablero.intentos += 1;
     muestraIntentos(tablero);
 
-    if (primeraCartaIndice === null) {
-        primeraCartaIndice = indice;
+    if (tablero.estadoPartida === "CeroCartasLevantadas") {
+        tablero.indiceCartaVolteadaA = indice;
         tablero.estadoPartida = "UnaCartaLevantada";
-    } else if (segundaCartaIndice === null) {
-        segundaCartaIndice = indice;
+    } else if (tablero.estadoPartida === "UnaCartaLevantada") {
+        tablero.indiceCartaVolteadaB = indice;
         tablero.estadoPartida = "DosCartasLevantadas";
         verificarPareja(tablero);
     }
+    console.log(tablero.cartas)
 
     if (esPartidaCompleta(tablero)) {
         setTimeout(() => alert("¡Felicidades! Has completado la partida."), 1000);
@@ -69,6 +62,12 @@ const manejarClickEnCarta = (divCarta: HTMLDivElement, tablero: Tablero, indice:
 
 // Función para voltear la carta y mostrarla
 const voltearCartaYMostrar = (divCarta: HTMLDivElement, tablero: Tablero, indice: number): void => {
+    if (!sePuedeVoltearLaCarta(tablero, indice)) {
+        if (tablero.cartas[indice].estaVuelta) {
+            alert("Esta carta ya está volteada.");
+        }
+        return;
+    }
     divCarta.classList.add('volteada');
     voltearLaCarta(tablero, indice);
 };
@@ -87,25 +86,29 @@ const restablecerCarta = (indice: number): void => {
 
 // Función para verificar si dos cartas son pareja
 const verificarPareja = (tablero: Tablero): void => {
-    if (primeraCartaIndice === null || segundaCartaIndice === null) return;
+    const indiceCartaA = tablero.indiceCartaVolteadaA;
+    const indiceCartaB = tablero.indiceCartaVolteadaB;
 
-    if (sonPareja(primeraCartaIndice, segundaCartaIndice, tablero)) {
-        parejaEncontrada(tablero, primeraCartaIndice, segundaCartaIndice);
-        resetearIndicesCartas();
-        tablero.estadoPartida = "CeroCartasLevantadas";
-    } else {
-        setTimeout(() => {
-            parejaNoEncontrada(tablero, primeraCartaIndice!, segundaCartaIndice!);
-            restablecerCarta(primeraCartaIndice!);
-            restablecerCarta(segundaCartaIndice!);
+    if (indiceCartaA !== undefined && indiceCartaB !== undefined) {
+        if (sonPareja(indiceCartaA, indiceCartaB, tablero)) {
+            parejaEncontrada(tablero, indiceCartaA, indiceCartaB);
             resetearIndicesCartas();
             tablero.estadoPartida = "CeroCartasLevantadas";
-        }, 1000);
-    }
+        } else {
+            setTimeout(() => {
+                parejaNoEncontrada(tablero, indiceCartaA!, indiceCartaB!);
+                restablecerCarta(indiceCartaA!);
+                restablecerCarta(indiceCartaB!);
+                resetearIndicesCartas();
+                tablero.estadoPartida = "CeroCartasLevantadas";
+            }, 1000);
+        }
+    } 
 };
+
 
 // Función para resetear los índices de las cartas seleccionadas
 const resetearIndicesCartas = (): void => {
-    primeraCartaIndice = null;
-    segundaCartaIndice = null;
+    tablero.indiceCartaVolteadaA= undefined;
+    tablero.indiceCartaVolteadaB= undefined;
 };

@@ -12,7 +12,7 @@ export const barajarCartas = (cartas: Carta[]): Carta[] => {
         let indiceAleatorio = Math.floor(Math.random() * indiceActual);
         indiceActual--;
         // y se intercambian entre sí
-        [cartas[indiceActual], cartas[indiceAleatorio]] = 
+        [{...cartas[indiceActual]}, {...cartas[indiceAleatorio]}] = 
         [cartas[indiceAleatorio], cartas[indiceActual]];
     }
     return cartas;
@@ -23,14 +23,10 @@ Una carta se puede voltear si no está encontrada y no está ya volteada, o no h
 */
 export const sePuedeVoltearLaCarta = (tablero: Tablero, indice: number): boolean => {
     // La carta específica que queremos voltear
-    return !tablero.cartas[indice].encontrada && !tablero.cartas[indice].estaVuelta
+    return (!tablero.cartas[indice].encontrada && !tablero.cartas[indice].estaVuelta);
 };
 
 export const voltearLaCarta = (tablero: Tablero, indice: number): void => {
-    // Verificar si se puede voltear la carta
-    if (!sePuedeVoltearLaCarta(tablero, indice)) {
-        return; // Salir de la función si no se puede voltear la carta
-    } else {
         // Obtener la carta específica del índice
         const carta = tablero.cartas[indice];
 
@@ -45,7 +41,6 @@ export const voltearLaCarta = (tablero: Tablero, indice: number): void => {
                 imgCarta.src = carta.imagen;
             }
         }
-    }
 };
 
 /*
@@ -65,6 +60,8 @@ export const parejaEncontrada = (tablero: Tablero, indiceA: number, indiceB: num
     // Marcar las cartas como encontradas
     carta1.encontrada = true;
     carta2.encontrada = true;
+    tablero.indiceCartaVolteadaA = undefined;
+    tablero.indiceCartaVolteadaB = undefined;
 
     // Comprobar si todas las cartas están encontradas
     const todasEncontradas = tablero.cartas.every(carta => carta.encontrada);
@@ -79,6 +76,14 @@ export const parejaEncontrada = (tablero: Tablero, indiceA: number, indiceB: num
     Aquí asumimos que no son pareja y las volvemos a poner boca abajo
 */
 export const parejaNoEncontrada = (tablero: Tablero, indiceA: number, indiceB: number): void => {
+    // Seleccionamos las cartas
+    const carta1 = tablero.cartas[indiceA];
+    const carta2 = tablero.cartas[indiceB];
+    
+    // Cambiar el estado de las cartas a no volteadas
+    carta1.estaVuelta = false;
+    carta2.estaVuelta = false;
+    
     // Seleccionamos los div de cada foto
     const divCarta1 = document.querySelector(`.carta-${indiceA}`);
     const divCarta2 = document.querySelector(`.carta-${indiceB}`);
@@ -92,22 +97,15 @@ export const parejaNoEncontrada = (tablero: Tablero, indiceA: number, indiceB: n
             imgCarta2.src = "fondo-carta.jpg";
         }
     }
-
-    // Cambiar el estado de las cartas a no volteadas
-    const carta1 = tablero.cartas[indiceA];
-    const carta2 = tablero.cartas[indiceB];
-    carta1.estaVuelta = false;
-    carta2.estaVuelta = false;
-};
-
+ // Resetear los índices de las cartas volteadas
+    tablero.indiceCartaVolteadaA = undefined;
+    tablero.indiceCartaVolteadaB = undefined;
+}
 /*
     Esto lo podemos comprobar o bien utilizando every, o bien utilizando un contador (cartasEncontradas)
 */
 export const esPartidaCompleta = (tablero: Tablero): boolean => {  
-    if (tablero.cartas.every(carta => carta.encontrada) || tablero.estadoPartida === "PartidaCompleta") {
-        return true;
-    }
-    return false;
+    return (tablero.cartas.every(carta => carta.encontrada) || tablero.estadoPartida === "PartidaCompleta") 
 };
 
 /*
